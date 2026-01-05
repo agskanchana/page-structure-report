@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Structure Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1em;
+            text-align: center;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        
+        .progress-step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #999;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .progress-step.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .progress-step.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .progress-label {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            width: 60px;
+            margin-left: -15px;
+        }
+        
+        .progress-label:first-child {
+            margin-left: 0;
+        }
+        
+        /* Form Pages */
+        .form-page {
+            display: none;
+        }
+        
+        .form-page.active {
+            display: block;
+        }
+        
+        .page-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        /* Section Groups */
+        .section-group {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .not-available-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .not-available-toggle input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        /* Checkbox Items */
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .checkbox-content {
+            flex: 1;
+        }
+        
+        .checkbox-label {
+            font-weight: 500;
+            color: #333;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .checkbox-note {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+        
+        .notes-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        .notes-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* GitHub Section */
+        .github-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .github-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Website URL Input */
+        .website-input {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #b8daff;
+        }
+        
+        .website-input label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #004085;
+        }
+        
+        .website-input input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #b8daff;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .website-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Report Link Box */
+        .report-link-box {
+            display: none;
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .report-link-box h3 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        .report-link-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        
+        .report-link-box .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Disabled Section */
+        .section-disabled .checkbox-list {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        
+        .section-disabled .checkbox-item {
+            background: #f0f0f0;
+        }
+        
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Summary Preview */
+        .summary-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-preview h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .stat-card.pass {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .stat-card.fail {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+        
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Page Structure Checker</h1>
+        <p class="subtitle">Check website page structure compliance</p>
+        
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="0">1</div>
+                <div class="progress-step" data-step="1">2</div>
+                <div class="progress-step" data-step="2">3</div>
+                <div class="progress-step" data-step="3">4</div>
+                <div class="progress-step" data-step="4">5</div>
+                <div class="progress-step" data-step="5">6</div>
+                <div class="progress-step" data-step="6">7</div>
+                <div class="progress-step" data-step="7">8</div>
+            </div>
+            <div class="progress-labels">
+                <span class="progress-label">Header</span>
+                <span class="progress-label">Home</span>
+                <span class="progress-label">T2</span>
+                <span class="progress-label">T3</span>
+                <span class="progress-label">T4</span>
+                <span class="progress-label">T5</span>
+                <span class="progress-label">T6</span>
+                <span class="progress-label">Report</span>
+            </div>
+        </div>
+        
+        <!-- Website URL (shown on all pages) -->
+        <div class="website-input">
+            <label>🌐 Website URL</label>
+            <input type="text" id="websiteUrl" placeholder="https://example.com">
+        </div>
+        
+        <!-- Page 1: Header / Footer -->
+        <div class="form-page active" data-page="0">
+            <h2 class="page-title">Header / Footer</h2>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">Header Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="header-items">
+                    <!-- Items will be generated by JS -->
+                </div>
+            </div>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">Footer Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="footer-items">
+                    <!-- Items will be generated by JS -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 2: Home Page -->
+        <div class="form-page" data-page="1">
+            <h2 class="page-title">Home Page</h2>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">Anywhere Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="home-anywhere-items">
+                </div>
+            </div>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">Center Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="home-center-items">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 3: T2 - Procedure/Service/Treatment -->
+        <div class="form-page" data-page="2">
+            <h2 class="page-title">PROCEDURE/SERVICE/TREATMENT PAGE (T2)</h2>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">T2 Anywhere Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="t2-anywhere-items">
+                </div>
+            </div>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">T2 Center Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="t2-center-items">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 4: T3 - Related Article / Blog Post -->
+        <div class="form-page" data-page="3">
+            <h2 class="page-title">RELATED ARTICLE PAGES / BLOG POST PAGES (T3)</h2>
+            
+            <div class="section-group" id="t3-section">
+                <div class="section-header">
+                    <span class="section-title">T3 Anywhere Must Haves</span>
+                    <label class="not-available-toggle">
+                        <input type="checkbox" id="t3-not-available" onchange="toggleSection('t3')">
+                        <span>Not Available</span>
+                    </label>
+                </div>
+                <div class="checkbox-list" id="t3-anywhere-items">
+                </div>
+            </div>
+            
+            <div class="section-group" id="t3-center-section">
+                <div class="section-header">
+                    <span class="section-title">T3 Center Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="t3-center-items">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 5: T4 - Meet the Team / About -->
+        <div class="form-page" data-page="4">
+            <h2 class="page-title">T4 PAGES</h2>
+            
+            <!-- About the Doctor/Owner -->
+            <div class="section-group" id="t4-doctor-section">
+                <div class="section-header">
+                    <span class="section-title">ABOUT THE DOCTOR/OWNER (T4)</span>
+                    <label class="not-available-toggle">
+                        <input type="checkbox" id="t4-doctor-not-available" onchange="toggleSection('t4-doctor')">
+                        <span>Not Available</span>
+                    </label>
+                </div>
+                <div class="checkbox-list" id="t4-doctor-items">
+                </div>
+            </div>
+            
+            <!-- Meet the Team -->
+            <div class="section-group" id="t4-team-section">
+                <div class="section-header">
+                    <span class="section-title">MEET THE TEAM (T4)</span>
+                    <label class="not-available-toggle">
+                        <input type="checkbox" id="t4-team-not-available" onchange="toggleSection('t4-team')">
+                        <span>Not Available</span>
+                    </label>
+                </div>
+                <div class="checkbox-list" id="t4-team-items">
+                </div>
+            </div>
+            
+            <!-- About the Practice/Business -->
+            <div class="section-group" id="t4-practice-section">
+                <div class="section-header">
+                    <span class="section-title">ABOUT THE PRACTICE/BUSINESS (T4)</span>
+                    <label class="not-available-toggle">
+                        <input type="checkbox" id="t4-practice-not-available" onchange="toggleSection('t4-practice')">
+                        <span>Not Available</span>
+                    </label>
+                </div>
+                <div class="checkbox-list" id="t4-practice-anywhere-items">
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="section-title" style="margin-bottom: 10px; font-size: 0.95em;">Center Must Haves</div>
+                    <div class="checkbox-list" id="t4-practice-center-items">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 6: T5 - Location Pages -->
+        <div class="form-page" data-page="5">
+            <h2 class="page-title">LOCATION PAGES (T5)</h2>
+            
+            <div class="section-group" id="t5-section">
+                <div class="section-header">
+                    <span class="section-title">T5 Anywhere Must Haves</span>
+                    <label class="not-available-toggle">
+                        <input type="checkbox" id="t5-not-available" onchange="toggleSection('t5')">
+                        <span>Not Available</span>
+                    </label>
+                </div>
+                <div class="checkbox-list" id="t5-anywhere-items">
+                </div>
+            </div>
+            
+            <div class="section-group" id="t5-center-section">
+                <div class="section-header">
+                    <span class="section-title">T5 Center Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="t5-center-items">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 7: T6 - Common Pages -->
+        <div class="form-page" data-page="6">
+            <h2 class="page-title">COMMON PAGES (T6)</h2>
+            
+            <div class="section-group">
+                <div class="section-header">
+                    <span class="section-title">T6 Anywhere Must Haves</span>
+                </div>
+                <div class="checkbox-list" id="t6-anywhere-items">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page 8: Report -->
+        <div class="form-page" data-page="7">
+            <h2 class="page-title">Generate Report</h2>
+            
+            <div class="summary-preview">
+                <h3>📊 Summary</h3>
+                <div class="summary-stats" id="summary-stats">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+            
+            <div class="github-section">
+                <h3>📤 Upload to GitHub Pages</h3>
+                <div class="input-group">
+                    <label>GitHub Personal Access Token</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <div class="input-group">
+                    <label>Repository (username/repo-name)</label>
+                    <input type="text" id="githubRepo" placeholder="username/repo-name">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-success" onclick="exportToHtml(true)" id="uploadBtn">📤 Upload to GitHub Pages</button>
+                    <button class="btn-secondary" onclick="exportToHtml(false)">💾 Download HTML</button>
+                </div>
+            </div>
+            
+            <div class="report-link-box" id="reportLinkBox">
+                <h3>✅ Report Uploaded Successfully!</h3>
+                <input type="text" id="reportLinkInput" readonly>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="copyReportLink()">📋 Copy Link</button>
+                    <button class="btn-success" onclick="openReportLink()">🔗 Open Report</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <button class="btn-secondary" id="prevBtn" onclick="changePage(-1)" disabled>← Previous</button>
+            <button class="btn-primary" id="nextBtn" onclick="changePage(1)">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration for all checklist items
+        const checklistConfig = {
+            header: [
+                { id: 'header-logo', label: 'Logo' },
+                { id: 'header-address', label: 'Address and Directions link (Per Location)' },
+                { id: 'header-phone', label: 'Phone Number: New and existing patients' },
+                { id: 'header-menu', label: 'Menu' },
+                { id: 'header-button', label: 'Button: Appointment Request/Contact Us' },
+                { id: 'header-slider', label: 'Image Slider / Video / Static Header Image' },
+                { id: 'header-search', label: 'Search' }
+            ],
+            footer: [
+                { id: 'footer-menu', label: 'Footer Menu' },
+                { id: 'footer-links', label: 'Links: Accessibility, Privacy, Sitemap' },
+                { id: 'footer-business', label: 'Business Name' },
+                { id: 'footer-address', label: 'Address with Directions (Per Location)' },
+                { id: 'footer-phone', label: 'Phone Number (Per Location)' },
+                { id: 'footer-copyright', label: 'Copyright Statement' },
+                { id: 'footer-powered', label: 'Powered by Link' },
+                { id: 'footer-backtop', label: 'Back to Top / Scroll Up Button' },
+                { id: 'footer-map', label: 'Google Embedded Map (Per Location)' },
+                { id: 'footer-privacy', label: 'Accept Privacy Policy Bar' }
+            ],
+            homeAnywhere: [
+                { id: 'home-reviews', label: 'Success Stories / Review Block' },
+                { id: 'home-logos', label: 'Logos of Associations' },
+                { id: 'home-awards', label: 'Awards', note: 'N/A if not applicable' },
+                { id: 'home-opentimes', label: 'Open Times: Display opening times per location' }
+            ],
+            homeCenter: [
+                { id: 'home-content', label: 'Home Page Content: Article-style content', note: '350-450 words by default, maximum 750-800 words. Focusing on: Introduction paragraph (mission/values), Key services offered, Call to Action (CTA) paragraph' },
+                { id: 'home-beforeafter', label: 'Before and After Images' }
+            ],
+            t2Anywhere: [
+                { id: 't2-reviews', label: 'Success Stories / Review block' },
+                { id: 't2-logos', label: 'If it exists - Logos of associations the client is a part of' },
+                { id: 't2-awards', label: 'If it exists - Awards the client/practice was awarded' },
+                { id: 't2-opentimes', label: 'Open Times (Per Location)' }
+            ],
+            t2Center: [
+                { id: 't2-faq', label: 'FAQ Article Content' },
+                { id: 't2-beforeafter', label: 'Before and After Images', note: 'N/A if not applicable' },
+                { id: 't2-eatbio', label: 'EAT Bio', note: 'Added if applicable' }
+            ],
+            t3Anywhere: [
+                { id: 't3-reviews', label: 'Success Stories / Review block' },
+                { id: 't3-logos', label: 'If it exists - Logos of associations the client is a part of' },
+                { id: 't3-awards', label: 'If it exists - Awards the client/practice was awarded' },
+                { id: 't3-opentimes', label: 'Open Times (Per Location)' }
+            ],
+            t3Center: [
+                { id: 't3-faq', label: 'FAQ Article Content' },
+                { id: 't3-beforeafter', label: 'Before and After Images' },
+                { id: 't3-eatbio', label: 'EAT Bio' }
+            ],
+            t4Doctor: [
+                { id: 't4-doc-reviews', label: 'Success Stories / Review block' },
+                { id: 't4-doc-logos', label: 'If it exists - Logos of associations the client is a part of' },
+                { id: 't4-doc-awards', label: 'If it exists - Awards the client/practice was awarded' },
+                { id: 't4-doc-opentimes', label: 'Open Times (Per Location)' }
+            ],
+            t4Team: [
+                { id: 't4-team-content', label: 'Meet the Doctor/Meet the Team Content' },
+                { id: 't4-team-headshots', label: 'Headshot of the Doctor/Client/Team Members', note: 'Optional including images of the team - Group picture' }
+            ],
+            t4PracticeAnywhere: [
+                { id: 't4-prac-reviews', label: 'Success Stories / Review block' },
+                { id: 't4-prac-logos', label: 'If it exists - Logos of associations the client is a part of' },
+                { id: 't4-prac-awards', label: 'If it exists - Awards the client/practice was awarded' },
+                { id: 't4-prac-opentimes', label: 'Open Times (Per Location)' }
+            ],
+            t4PracticeCenter: [
+                { id: 't4-prac-content', label: 'About the Practice/Business Content' },
+                { id: 't4-prac-images', label: 'Images of the office (interior or exterior)' }
+            ],
+            t5Anywhere: [
+                { id: 't5-reviews', label: 'Success Stories / Review block' },
+                { id: 't5-logos', label: 'If it exists - Logos of associations the client is a part of' },
+                { id: 't5-awards', label: 'If it exists - Awards the client/practice was awarded' },
+                { id: 't5-opentimes', label: 'Open Times (Per Location)' }
+            ],
+            t5Center: [
+                { id: 't5-content', label: 'Location page Content' },
+                { id: 't5-images', label: 'Images related to the office' }
+            ],
+            t6Anywhere: [
+                { id: 't6-logos', label: 'If it exists - Logos of associations the client is a part of' },
+                { id: 't6-awards', label: 'If it exists - Awards the client/practice was awarded' },
+                { id: 't6-opentimes', label: 'Open Times (Per Location)' }
+            ]
+        };
+
+        // State
+        let currentPage = 0;
+        const totalPages = 8;
+        let formData = {};
+        let sectionAvailability = {
+            t3: true,
+            t5: true,
+            't4-doctor': true,
+            't4-team': true,
+            't4-practice': true
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved GitHub credentials
+            const savedToken = localStorage.getItem('github_token');
+            const savedRepo = localStorage.getItem('github_repo');
+            if (savedToken) document.getElementById('githubToken').value = savedToken;
+            if (savedRepo) document.getElementById('githubRepo').value = savedRepo;
+
+            // Generate all checkbox lists
+            generateCheckboxList('header-items', checklistConfig.header);
+            generateCheckboxList('footer-items', checklistConfig.footer);
+            generateCheckboxList('home-anywhere-items', checklistConfig.homeAnywhere);
+            generateCheckboxList('home-center-items', checklistConfig.homeCenter);
+            generateCheckboxList('t2-anywhere-items', checklistConfig.t2Anywhere);
+            generateCheckboxList('t2-center-items', checklistConfig.t2Center);
+            generateCheckboxList('t3-anywhere-items', checklistConfig.t3Anywhere);
+            generateCheckboxList('t3-center-items', checklistConfig.t3Center);
+            generateCheckboxList('t4-doctor-items', checklistConfig.t4Doctor);
+            generateCheckboxList('t4-team-items', checklistConfig.t4Team);
+            generateCheckboxList('t4-practice-anywhere-items', checklistConfig.t4PracticeAnywhere);
+            generateCheckboxList('t4-practice-center-items', checklistConfig.t4PracticeCenter);
+            generateCheckboxList('t5-anywhere-items', checklistConfig.t5Anywhere);
+            generateCheckboxList('t5-center-items', checklistConfig.t5Center);
+            generateCheckboxList('t6-anywhere-items', checklistConfig.t6Anywhere);
+
+            updateNavButtons();
+        });
+
+        function generateCheckboxList(containerId, items) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = items.map(item => `
+                <div class="checkbox-item">
+                    <input type="checkbox" id="${item.id}" onchange="updateFormData('${item.id}', this.checked)">
+                    <div class="checkbox-content">
+                        <label class="checkbox-label" for="${item.id}">${item.label}</label>
+                        ${item.note ? `<span class="checkbox-note">${item.note}</span>` : ''}
+                        <input type="text" class="notes-input" placeholder="Add notes..." 
+                            id="${item.id}-notes" onchange="updateFormData('${item.id}-notes', this.value)">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateFormData(id, value) {
+            formData[id] = value;
+        }
+
+        function toggleSection(sectionId) {
+            const checkbox = document.getElementById(`${sectionId}-not-available`);
+            sectionAvailability[sectionId] = !checkbox.checked;
+
+            // Update UI
+            if (sectionId === 't3') {
+                document.getElementById('t3-section').classList.toggle('section-disabled', checkbox.checked);
+                document.getElementById('t3-center-section').classList.toggle('section-disabled', checkbox.checked);
+            } else if (sectionId === 't5') {
+                document.getElementById('t5-section').classList.toggle('section-disabled', checkbox.checked);
+                document.getElementById('t5-center-section').classList.toggle('section-disabled', checkbox.checked);
+            } else if (sectionId === 't4-doctor') {
+                document.getElementById('t4-doctor-section').classList.toggle('section-disabled', checkbox.checked);
+            } else if (sectionId === 't4-team') {
+                document.getElementById('t4-team-section').classList.toggle('section-disabled', checkbox.checked);
+            } else if (sectionId === 't4-practice') {
+                document.getElementById('t4-practice-section').classList.toggle('section-disabled', checkbox.checked);
+            }
+        }
+
+        function changePage(direction) {
+            const newPage = currentPage + direction;
+            if (newPage >= 0 && newPage < totalPages) {
+                currentPage = newPage;
+                updatePageDisplay();
+                updateNavButtons();
+                updateProgressBar();
+                
+                if (currentPage === totalPages - 1) {
+                    generateSummary();
+                }
+            }
+        }
+
+        function updatePageDisplay() {
+            document.querySelectorAll('.form-page').forEach((page, index) => {
+                page.classList.toggle('active', index === currentPage);
+            });
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentPage === totalPages - 1) {
+                nextBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'block';
+                nextBtn.textContent = 'Next →';
+            }
+        }
+
+        function updateProgressBar() {
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index < currentPage) {
+                    step.classList.add('completed');
+                } else if (index === currentPage) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function generateSummary() {
+            let totalItems = 0;
+            let checkedItems = 0;
+            let uncheckedItems = 0;
+
+            // Count all checkboxes
+            const allConfigs = [
+                ...checklistConfig.header,
+                ...checklistConfig.footer,
+                ...checklistConfig.homeAnywhere,
+                ...checklistConfig.homeCenter,
+                ...checklistConfig.t2Anywhere,
+                ...checklistConfig.t2Center
+            ];
+
+            // Add conditional sections
+            if (sectionAvailability.t3) {
+                allConfigs.push(...checklistConfig.t3Anywhere, ...checklistConfig.t3Center);
+            }
+            if (sectionAvailability['t4-doctor']) {
+                allConfigs.push(...checklistConfig.t4Doctor);
+            }
+            if (sectionAvailability['t4-team']) {
+                allConfigs.push(...checklistConfig.t4Team);
+            }
+            if (sectionAvailability['t4-practice']) {
+                allConfigs.push(...checklistConfig.t4PracticeAnywhere, ...checklistConfig.t4PracticeCenter);
+            }
+            if (sectionAvailability.t5) {
+                allConfigs.push(...checklistConfig.t5Anywhere, ...checklistConfig.t5Center);
+            }
+            allConfigs.push(...checklistConfig.t6Anywhere);
+
+            allConfigs.forEach(item => {
+                totalItems++;
+                const checkbox = document.getElementById(item.id);
+                if (checkbox && checkbox.checked) {
+                    checkedItems++;
+                } else {
+                    uncheckedItems++;
+                }
+            });
+
+            const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+            document.getElementById('summary-stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="number">${totalItems}</div>
+                    <div class="label">Total Items</div>
+                </div>
+                <div class="stat-card pass">
+                    <div class="number">${checkedItems}</div>
+                    <div class="label">Checked ✓</div>
+                </div>
+                <div class="stat-card fail">
+                    <div class="number">${uncheckedItems}</div>
+                    <div class="label">Unchecked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${percentage}%</div>
+                    <div class="label">Compliance</div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function exportToHtml(uploadToGitHub) {
+            const websiteUrl = document.getElementById('websiteUrl').value.trim() || 'Not specified';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+
+            // Collect all data
+            const reportSections = [];
+
+            // Header Section
+            reportSections.push({
+                title: 'Header Must Haves',
+                items: checklistConfig.header.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            // Footer Section
+            reportSections.push({
+                title: 'Footer Must Haves',
+                items: checklistConfig.footer.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            // Home Page
+            reportSections.push({
+                title: 'Home Page - Anywhere Must Haves',
+                items: checklistConfig.homeAnywhere.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            reportSections.push({
+                title: 'Home Page - Center Must Haves',
+                items: checklistConfig.homeCenter.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            // T2
+            reportSections.push({
+                title: 'T2 (Procedure/Service/Treatment) - Anywhere Must Haves',
+                items: checklistConfig.t2Anywhere.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            reportSections.push({
+                title: 'T2 (Procedure/Service/Treatment) - Center Must Haves',
+                items: checklistConfig.t2Center.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            // T3 (if available)
+            if (sectionAvailability.t3) {
+                reportSections.push({
+                    title: 'T3 (Related Article/Blog) - Anywhere Must Haves',
+                    items: checklistConfig.t3Anywhere.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+
+                reportSections.push({
+                    title: 'T3 (Related Article/Blog) - Center Must Haves',
+                    items: checklistConfig.t3Center.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+            } else {
+                reportSections.push({
+                    title: 'T3 (Related Article/Blog)',
+                    notAvailable: true
+                });
+            }
+
+            // T4 - Doctor
+            if (sectionAvailability['t4-doctor']) {
+                reportSections.push({
+                    title: 'T4 - About the Doctor/Owner',
+                    items: checklistConfig.t4Doctor.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+            } else {
+                reportSections.push({
+                    title: 'T4 - About the Doctor/Owner',
+                    notAvailable: true
+                });
+            }
+
+            // T4 - Team
+            if (sectionAvailability['t4-team']) {
+                reportSections.push({
+                    title: 'T4 - Meet the Team',
+                    items: checklistConfig.t4Team.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+            } else {
+                reportSections.push({
+                    title: 'T4 - Meet the Team',
+                    notAvailable: true
+                });
+            }
+
+            // T4 - Practice
+            if (sectionAvailability['t4-practice']) {
+                reportSections.push({
+                    title: 'T4 - About the Practice/Business - Anywhere Must Haves',
+                    items: checklistConfig.t4PracticeAnywhere.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+
+                reportSections.push({
+                    title: 'T4 - About the Practice/Business - Center Must Haves',
+                    items: checklistConfig.t4PracticeCenter.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+            } else {
+                reportSections.push({
+                    title: 'T4 - About the Practice/Business',
+                    notAvailable: true
+                });
+            }
+
+            // T5 (if available)
+            if (sectionAvailability.t5) {
+                reportSections.push({
+                    title: 'T5 (Location Pages) - Anywhere Must Haves',
+                    items: checklistConfig.t5Anywhere.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+
+                reportSections.push({
+                    title: 'T5 (Location Pages) - Center Must Haves',
+                    items: checklistConfig.t5Center.map(item => ({
+                        label: item.label,
+                        checked: document.getElementById(item.id)?.checked || false,
+                        notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                    }))
+                });
+            } else {
+                reportSections.push({
+                    title: 'T5 (Location Pages)',
+                    notAvailable: true
+                });
+            }
+
+            // T6
+            reportSections.push({
+                title: 'T6 (Common Pages) - Anywhere Must Haves',
+                items: checklistConfig.t6Anywhere.map(item => ({
+                    label: item.label,
+                    checked: document.getElementById(item.id)?.checked || false,
+                    notes: document.getElementById(`${item.id}-notes`)?.value || ''
+                }))
+            });
+
+            // Calculate totals
+            let totalItems = 0;
+            let checkedItems = 0;
+            reportSections.forEach(section => {
+                if (section.items) {
+                    section.items.forEach(item => {
+                        totalItems++;
+                        if (item.checked) checkedItems++;
+                    });
+                }
+            });
+
+            const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+            // Generate HTML sections
+            const sectionsHtml = reportSections.map(section => {
+                if (section.notAvailable) {
+                    return `
+                        <div class="section">
+                            <h3>${escapeHtml(section.title)}</h3>
+                            <p class="not-available">⚠️ Not Available / Not Applicable</p>
+                        </div>
+                    `;
+                }
+                
+                const itemsHtml = section.items.map(item => `
+                    <tr>
+                        <td class="${item.checked ? 'status-pass' : 'status-fail'}">${item.checked ? '✓' : '✗'}</td>
+                        <td>${escapeHtml(item.label)}</td>
+                        <td>${escapeHtml(item.notes) || '-'}</td>
+                    </tr>
+                `).join('');
+
+                return `
+                    <div class="section">
+                        <h3>${escapeHtml(section.title)}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Status</th>
+                                    <th>Item</th>
+                                    <th style="width: 200px;">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }).join('');
+
+            const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Structure Report - ${new Date().toLocaleDateString()}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .report-info { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .report-info p { margin: 5px 0; color: #666; }
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .summary-card { padding: 20px; border-radius: 8px; text-align: center; color: white; }
+        .summary-card.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .summary-card.passed { background: #28a745; }
+        .summary-card.failed { background: #dc3545; }
+        .summary-card.percentage { background: #17a2b8; }
+        .summary-card h3 { font-size: 14px; margin-bottom: 8px; opacity: 0.9; }
+        .summary-card .number { font-size: 32px; font-weight: bold; }
+        .section { margin-bottom: 30px; }
+        .section h3 { color: #667eea; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #333; color: white; }
+        th { padding: 10px; text-align: left; font-weight: 600; }
+        td { padding: 10px; border-bottom: 1px solid #e9ecef; }
+        tbody tr:hover { background: #f8f9fa; }
+        .status-pass { color: #28a745; font-weight: bold; text-align: center; }
+        .status-fail { color: #dc3545; font-weight: bold; text-align: center; }
+        .not-available { color: #856404; background: #fff3cd; padding: 15px; border-radius: 6px; }
+        @media print { body { background: white; padding: 0; } .container { box-shadow: none; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Page Structure Report</h1>
+        <p class="subtitle">Website Compliance Checklist</p>
+        
+        <div class="report-info">
+            <p><strong>Website:</strong> ${escapeHtml(websiteUrl)}</p>
+            <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="summary-card total">
+                <h3>Total Items</h3>
+                <div class="number">${totalItems}</div>
+            </div>
+            <div class="summary-card passed">
+                <h3>Checked ✓</h3>
+                <div class="number">${checkedItems}</div>
+            </div>
+            <div class="summary-card failed">
+                <h3>Unchecked</h3>
+                <div class="number">${totalItems - checkedItems}</div>
+            </div>
+            <div class="summary-card percentage">
+                <h3>Compliance</h3>
+                <div class="number">${percentage}%</div>
+            </div>
+        </div>
+        
+        ${sectionsHtml}
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #666;">
+            <p>Generated by Page Structure Checker</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+            const filename = `page-structure-report-${timestamp}.html`;
+
+            if (uploadToGitHub) {
+                const token = document.getElementById('githubToken').value.trim();
+                const repo = document.getElementById('githubRepo').value.trim();
+
+                if (!token || !repo) {
+                    alert('Please enter GitHub token and repository to upload.');
+                    return;
+                }
+
+                // Save credentials
+                localStorage.setItem('github_token', token);
+                localStorage.setItem('github_repo', repo);
+
+                try {
+                    document.getElementById('uploadBtn').disabled = true;
+                    document.getElementById('uploadBtn').innerHTML = '<span class="loading"></span> Uploading...';
+
+                    const path = `reports/${filename}`;
+                    const content = btoa(unescape(encodeURIComponent(htmlContent)));
+
+                    const repoParts = repo.split('/');
+                    if (repoParts.length !== 2) {
+                        throw new Error('Repository format should be: username/repo-name');
+                    }
+                    const [owner, repoName] = repoParts;
+
+                    const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${path}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: `Add page structure report - ${new Date().toLocaleString()}`,
+                            content: content
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Failed to upload');
+                    }
+
+                    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/main/${path}`;
+                    const htmlPreviewUrl = `https://htmlpreview.github.io/?${rawUrl}`;
+
+                    // Try to shorten URL
+                    document.getElementById('uploadBtn').innerHTML = '<span class="loading"></span> Shortening URL...';
+
+                    let finalUrl = htmlPreviewUrl;
+
+                    try {
+                        const jo4Response = await fetch('https://jo4-api.jo4.io/api/v1/protected/url', {
+                            method: 'POST',
+                            headers: {
+                                'X-API-Key': 'jo4_live_46db11adf6e38a4d7af21fc151e8aa002d8e738b3f593eb650a58f9d197bf241',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ longUrl: htmlPreviewUrl })
+                        });
+
+                        if (jo4Response.ok) {
+                            const jo4Data = await jo4Response.json();
+                            if (jo4Data && jo4Data.shortUrl) {
+                                finalUrl = jo4Data.shortUrl;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('URL shortening failed, using full URL');
+                    }
+
+                    document.getElementById('reportLinkInput').value = finalUrl;
+                    document.getElementById('reportLinkBox').style.display = 'block';
+                    document.getElementById('reportLinkBox').scrollIntoView({ behavior: 'smooth' });
+
+                } catch (error) {
+                    alert('Failed to upload: ' + error.message);
+                } finally {
+                    document.getElementById('uploadBtn').disabled = false;
+                    document.getElementById('uploadBtn').textContent = '📤 Upload to GitHub Pages';
+                }
+            } else {
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+        }
+
+        function copyReportLink() {
+            const input = document.getElementById('reportLinkInput');
+            input.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
+
+        function openReportLink() {
+            window.open(document.getElementById('reportLinkInput').value, '_blank');
+        }
+    </script>
+</body>
+</html>

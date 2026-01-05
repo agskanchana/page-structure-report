@@ -697,6 +697,7 @@
                 <div class="btn-group">
                     <button class="btn-primary" onclick="copyReportLink()">📋 Copy Link</button>
                     <button class="btn-success" onclick="openReportLink()">🔗 Open Report</button>
+                    <button class="btn-secondary" onclick="shortenUrl()" id="shortenBtn">✂️ Shorten URL</button>
                 </div>
             </div>
         </div>
@@ -1356,32 +1357,7 @@
                     const rawUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/main/${path}`;
                     const htmlPreviewUrl = `https://htmlpreview.github.io/?${rawUrl}`;
 
-                    // Try to shorten URL
-                    document.getElementById('uploadBtn').innerHTML = '<span class="loading"></span> Shortening URL...';
-
-                    let finalUrl = htmlPreviewUrl;
-
-                    try {
-                        const jo4Response = await fetch('https://jo4-api.jo4.io/api/v1/protected/url', {
-                            method: 'POST',
-                            headers: {
-                                'X-API-Key': 'jo4_live_46db11adf6e38a4d7af21fc151e8aa002d8e738b3f593eb650a58f9d197bf241',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ longUrl: htmlPreviewUrl })
-                        });
-
-                        if (jo4Response.ok) {
-                            const jo4Data = await jo4Response.json();
-                            if (jo4Data && jo4Data.shortUrl) {
-                                finalUrl = jo4Data.shortUrl;
-                            }
-                        }
-                    } catch (e) {
-                        console.log('URL shortening failed, using full URL');
-                    }
-
-                    document.getElementById('reportLinkInput').value = finalUrl;
+                    document.getElementById('reportLinkInput').value = htmlPreviewUrl;
                     document.getElementById('reportLinkBox').style.display = 'block';
                     document.getElementById('reportLinkBox').scrollIntoView({ behavior: 'smooth' });
 
@@ -1410,6 +1386,41 @@
 
         function openReportLink() {
             window.open(document.getElementById('reportLinkInput').value, '_blank');
+        }
+
+        async function shortenUrl() {
+            const longUrl = document.getElementById('reportLinkInput').value;
+            const shortenBtn = document.getElementById('shortenBtn');
+            
+            if (!longUrl) {
+                alert('No URL to shorten!');
+                return;
+            }
+            
+            try {
+                shortenBtn.disabled = true;
+                shortenBtn.innerHTML = '<span class="loading"></span> Shortening...';
+                
+                const res = await fetch('https://urllink.site/api/url.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: longUrl })
+                });
+                
+                const data = await res.json();
+                
+                if (data.short_url) {
+                    document.getElementById('reportLinkInput').value = data.short_url;
+                    alert('✅ URL shortened successfully!');
+                } else {
+                    throw new Error('Failed to shorten URL');
+                }
+            } catch (error) {
+                alert('Failed to shorten URL: ' + error.message);
+            } finally {
+                shortenBtn.disabled = false;
+                shortenBtn.textContent = '✂️ Shorten URL';
+            }
         }
     </script>
 </body>
